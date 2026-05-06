@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arduino Nano 33 BLE Sense</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: #ffffff;
+      color: #1a1a2e;
+      line-height: 1.7;
+    }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, #f0fafa 0%, #e6f7f7 60%, #ffffff 100%);
+      border-bottom: 1px solid #e2e8f0;
+      padding: 90px 20px 70px;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: 2.8rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      letter-spacing: -0.5px;
+    }
+
+    .hero h1 span { color: #00878a; }
+
+    .hero p {
+      margin-top: 16px;
+      font-size: 1.1rem;
+      color: #64748b;
+      max-width: 620px;
+      margin-inline: auto;
+    }
+
+    .hero-img {
+      display: block;
+      margin: 32px auto 0;
+      max-width: 320px;
+      width: 90%;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px #00878a22;
+      border: 1px solid #e2e8f0;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-top: 24px;
+      padding: 6px 18px;
+      border-radius: 20px;
+      background: #e6f7f7;
+      border: 1px solid #00878a44;
+      color: #00878a;
+      font-size: 0.83rem;
+      font-weight: 600;
+    }
+
+    /* LAYOUT */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    section { padding: 64px 20px; }
+    section:nth-child(even) { background: #f8fafc; }
+
+    h2 {
+      font-size: 1.7rem;
+      color: #1a1a2e;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    h2::after {
+      content: '';
+      display: block;
+      width: 40px;
+      height: 3px;
+      background: #00878a;
+      margin-top: 10px;
+      border-radius: 2px;
+    }
+
+    p { color: #64748b; margin-top: 10px; }
+
+    /* SPECS GRID */
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 32px;
+    }
+
+    .spec-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px;
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+
+    .spec-card:hover {
+      border-color: #00878a55;
+      box-shadow: 0 4px 16px #00878a11;
+    }
+
+    .spec-card .icon {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+    }
+
+    .spec-card h3 {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      font-weight: 600;
+    }
+
+    .spec-card p {
+      color: #1a1a2e;
+      font-weight: 600;
+      font-size: 0.97rem;
+      margin-top: 4px;
+    }
+
+    /* SENSOR CARDS */
+    .sensors-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 36px;
+    }
+
+    .sensor-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 24px;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+
+    .sensor-card:hover {
+      transform: translateY(-4px);
+      border-color: #00878a55;
+      box-shadow: 0 8px 24px #00878a0f;
+    }
+
+    .sensor-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .sensor-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .sensor-card h3 {
+      font-size: 1rem;
+      color: #1a1a2e;
+      font-weight: 600;
+    }
+
+    .sensor-card .chip {
+      font-size: 0.73rem;
+      color: #94a3b8;
+      margin-top: 2px;
+      font-weight: 500;
+    }
+
+    .sensor-card p {
+      font-size: 0.9rem;
+      color: #64748b;
+      margin-top: 0;
+    }
+
+    .sensor-card ul {
+      margin-top: 12px;
+      padding-left: 18px;
+    }
+
+    .sensor-card ul li {
+      color: #64748b;
+      font-size: 0.87rem;
+      margin-bottom: 4px;
+    }
+
+    .sensor-card ul li strong { color: #334155; }
+
+    .lib-tag {
+      display: inline-block;
+      margin-top: 14px;
+      padding: 4px 10px;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 0.77rem;
+      color: #0077b6;
+      font-family: monospace;
+    }
+
+    /* CÓDIGO */
+    .code-block {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 24px;
+      margin-top: 20px;
+      overflow-x: auto;
+    }
+
+    .code-block pre {
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      font-size: 0.87rem;
+      color: #334155;
+      white-space: pre;
+    }
+
+    .code-block .kw  { color: #d946ef; }
+    .code-block .fn  { color: #0077b6; }
+    .code-block .str { color: #059669; }
+    .code-block .cm  { color: #94a3b8; font-style: italic; }
+    .code-block .nb  { color: #ea580c; }
+
+    /* TABELA */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 28px;
+      font-size: 0.9rem;
+    }
+
+    thead th {
+      background: #f1f5f9;
+      color: #1a1a2e;
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 2px solid #00878a;
+      font-weight: 600;
+    }
+
+    tbody td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #475569;
+    }
+
+    tbody tr:hover td { background: #f8fafc; }
+
+    code {
+      background: #f1f5f9;
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-family: monospace;
+      font-size: 0.83rem;
+      color: #0077b6;
+    }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      padding: 40px 20px;
+      color: #94a3b8;
+      font-size: 0.85rem;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    footer a { color: #00878a; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>Arduino <span>Nano 33 BLE Sense</span></h1>
+  <p>Uma placa compacta com processador ARM Cortex-M4, Bluetooth Low Energy e 7 sensores embutidos — ideal para projetos de IoT, TinyML e robótica.</p>
+  <div class="badge">⚡ nRF52840 · 64 MHz · BLE 5.0 · 7 Sensores</div>
+  <img class="hero-img" src="figure.png" alt="Arduino Nano 33 BLE Sense" />
+</div>
+
+<!-- ESPECIFICAÇÕES -->
+<section>
+  <div class="container">
+    <h2>Especificações</h2>
+    <p>Principais características de hardware da placa.</p>
+
+    <div class="specs-grid">
+      <div class="spec-card">
+        <div class="icon">🧠</div>
+        <h3>Processador</h3>
+        <p>nRF52840 (ARM Cortex-M4 FPU)</p>
+      </div>
+      <div class="spec-card">
+        <div class="icon">⚡</div>
+        <h3>Clock</h3>
+        <p>64 MHz</p>
+      </div>
+      <div class="spec-card">
+        <div class="icon">💾</div>
+        <h3>Flash / RAM</h3>
+        <p>1 MB Flash · 256 KB RAM</p>
+      </div>
+      <div class="spec-card">
+        <div class="icon">📡</div>
+        <h3>Wireless</h3>
+        <p>Bluetooth 5.0 (BLE)</p>
+      </div>
+      <div class="spec-card">
+        <div class="icon">🔌</div>
+        <h3>Tensão de operação</h3>
+        <p>3.3V (I/Os tolerantes a 5V)</p>
+      </div>
+      <div class="spec-card">
+        <div class="icon">📐</div>
+        <h3>Tamanho</h3>
+        <p>45 × 18 mm</p>
+      </div>
+      <div class="spec-card">
+        <div class="icon">🔁</div>
+        <h3>I/O Digitais</h3>
+        <p>14 pinos (PWM em 12)</p>
+      </div>
+      <div class="spec-card">
+        <div class="icon">📈</div>
+        <h3>Analógicos</h3>
+        <p>8 entradas · 1 saída DAC</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SENSORES -->
+<section>
+  <div class="container">
+    <h2>Sensores Embutidos</h2>
+    <p>A placa integra 7 sensores diferentes, prontos para uso sem nenhum hardware adicional.</p>
+
+    <div class="sensors-grid">
+
+      <!-- IMU -->
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div class="sensor-icon" style="background:#e0f2fe;">📐</div>
+          <div>
+            <h3>IMU — Acelerômetro · Giroscópio · Magnetômetro</h3>
+            <div class="chip">LSM9DS1</div>
+          </div>
+        </div>
+        <p>Unidade de medição inercial com 9 graus de liberdade. Detecta movimento, orientação e campos magnéticos.</p>
+        <ul>
+          <li><strong>Acelerômetro:</strong> ±2 / 4 / 8 / 16 g</li>
+          <li><strong>Giroscópio:</strong> ±245 / 500 / 2000 dps</li>
+          <li><strong>Magnetômetro:</strong> ±400 / 800 / 1200 / 1600 µT</li>
+        </ul>
+        <div class="lib-tag">#include &lt;Arduino_LSM9DS1.h&gt;</div>
+      </div>
+
+      <!-- Temperatura e Umidade -->
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div class="sensor-icon" style="background:#dcfce7;">🌡️</div>
+          <div>
+            <h3>Temperatura e Umidade</h3>
+            <div class="chip">HTS221</div>
+          </div>
+        </div>
+        <p>Sensor capacitivo de temperatura e umidade relativa com alta precisão e baixo consumo.</p>
+        <ul>
+          <li><strong>Temperatura:</strong> -40 a +120 °C (±0.5°C)</li>
+          <li><strong>Umidade:</strong> 0 a 100% RH (±3.5%)</li>
+          <li><strong>Taxa:</strong> ~1 Hz (esperar dado disponível)</li>
+        </ul>
+        <div class="lib-tag">#include &lt;Arduino_HTS221.h&gt;</div>
+      </div>
+
+      <!-- Pressão -->
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div class="sensor-icon" style="background:#fef9c3;">🌬️</div>
+          <div>
+            <h3>Pressão Barométrica</h3>
+            <div class="chip">LPS22HB</div>
+          </div>
+        </div>
+        <p>Sensor piezo-resistivo de pressão absoluta. Pode ser usado para medir altitude.</p>
+        <ul>
+          <li><strong>Faixa:</strong> 260 a 1260 hPa</li>
+          <li><strong>Precisão:</strong> ±0.1 hPa</li>
+          <li><strong>Altitude:</strong> calculável via fórmula barométrica</li>
+        </ul>
+        <div class="lib-tag">#include &lt;Arduino_LPS22HB.h&gt;</div>
+      </div>
+
+      <!-- APDS9960 -->
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div class="sensor-icon" style="background:#f3e8ff;">👆</div>
+          <div>
+            <h3>Gesto · Cor · Proximidade · Luz</h3>
+            <div class="chip">APDS-9960</div>
+          </div>
+        </div>
+        <p>Sensor ótico multifuncional com detecção de gestos direccionais, cor RGB, luz ambiente e proximidade.</p>
+        <ul>
+          <li><strong>Gestos:</strong> Cima, Baixo, Esquerda, Direita</li>
+          <li><strong>Cor:</strong> R, G, B + Ambiente (16 bits)</li>
+          <li><strong>Proximidade:</strong> 0 a 255 (perto → longe)</li>
+        </ul>
+        <div class="lib-tag">#include &lt;Arduino_APDS9960.h&gt;</div>
+      </div>
+
+      <!-- Microfone -->
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div class="sensor-icon" style="background:#ffe4e6;">🎙️</div>
+          <div>
+            <h3>Microfone Digital</h3>
+            <div class="chip">MP34DT05</div>
+          </div>
+        </div>
+        <p>Microfone MEMS omnidirecional com interface PDM. Ideal para reconhecimento de voz e detecção de som.</p>
+        <ul>
+          <li><strong>Interface:</strong> PDM (Pulse Density Modulation)</li>
+          <li><strong>Taxa:</strong> até 16 kHz (mono) ou 44.1 kHz</li>
+          <li><strong>SNR:</strong> 61 dB</li>
+        </ul>
+        <div class="lib-tag">#include &lt;PDM.h&gt;</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- BIBLIOTECAS -->
+<section>
+  <div class="container">
+    <h2>Bibliotecas e Métodos</h2>
+    <p>Referência rápida dos métodos principais de cada sensor.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Sensor</th>
+          <th>Biblioteca</th>
+          <th>Métodos principais</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Acelerômetro</td>
+          <td><code>Arduino_LSM9DS1</code></td>
+          <td><code>IMU.accelerationAvailable()</code> · <code>IMU.readAcceleration(x,y,z)</code></td>
+        </tr>
+        <tr>
+          <td>Giroscópio</td>
+          <td><code>Arduino_LSM9DS1</code></td>
+          <td><code>IMU.gyroscopeAvailable()</code> · <code>IMU.readGyroscope(x,y,z)</code></td>
+        </tr>
+        <tr>
+          <td>Magnetômetro</td>
+          <td><code>Arduino_LSM9DS1</code></td>
+          <td><code>IMU.magneticFieldAvailable()</code> · <code>IMU.readMagneticField(x,y,z)</code></td>
+        </tr>
+        <tr>
+          <td>Temperatura / Umidade</td>
+          <td><code>Arduino_HTS221</code></td>
+          <td><code>HTS.readTemperature()</code> · <code>HTS.readHumidity()</code></td>
+        </tr>
+        <tr>
+          <td>Pressão</td>
+          <td><code>Arduino_LPS22HB</code></td>
+          <td><code>BARO.readPressure()</code></td>
+        </tr>
+        <tr>
+          <td>Proximidade</td>
+          <td><code>Arduino_APDS9960</code></td>
+          <td><code>APDS.proximityAvailable()</code> · <code>APDS.readProximity()</code></td>
+        </tr>
+        <tr>
+          <td>Cor / Luz</td>
+          <td><code>Arduino_APDS9960</code></td>
+          <td><code>APDS.colorAvailable()</code> · <code>APDS.readColor(r,g,b,a)</code></td>
+        </tr>
+        <tr>
+          <td>Gesto</td>
+          <td><code>Arduino_APDS9960</code></td>
+          <td><code>APDS.gestureAvailable()</code> · <code>APDS.readGesture()</code></td>
+        </tr>
+        <tr>
+          <td>Microfone</td>
+          <td><code>PDM</code></td>
+          <td><code>PDM.begin(1, 16000)</code> · <code>PDM.onReceive(callback)</code> · <code>PDM.read(buf, len)</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- EXEMPLO DE CÓDIGO -->
+<section>
+  <div class="container">
+    <h2>Exemplo de Código</h2>
+    <p>Leitura simultânea de todos os sensores com controle de tempo para o HTS221.</p>
+
+    <div class="code-block"><pre>
+<span class="cm">// Instale via Library Manager: Arduino_LSM9DS1, Arduino_HTS221,</span>
+<span class="cm">// Arduino_LPS22HB, Arduino_APDS9960</span>
+
+<span class="kw">#include</span> <span class="str">&lt;Arduino_LSM9DS1.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;Arduino_HTS221.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;Arduino_LPS22HB.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;Arduino_APDS9960.h&gt;</span>
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  Serial.<span class="fn">begin</span>(<span class="nb">9600</span>);
+  <span class="kw">while</span> (!Serial);
+
+  IMU.<span class="fn">begin</span>();
+  HTS.<span class="fn">begin</span>();
+  BARO.<span class="fn">begin</span>();
+  APDS.<span class="fn">begin</span>();
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="cm">// Acelerômetro</span>
+  <span class="kw">if</span> (IMU.<span class="fn">accelerationAvailable</span>()) {
+    <span class="kw">float</span> x, y, z;
+    IMU.<span class="fn">readAcceleration</span>(x, y, z);
+    Serial.<span class="fn">printf</span>(<span class="str">"Accel: %.2f, %.2f, %.2f g\n"</span>, x, y, z);
+  }
+
+  <span class="cm">// Temperatura e umidade (1 Hz — controla com millis)</span>
+  <span class="kw">static unsigned long</span> lastHTS = <span class="nb">0</span>;
+  <span class="kw">if</span> (millis() - lastHTS >= <span class="nb">1000</span>) {
+    lastHTS = <span class="fn">millis</span>();
+    Serial.<span class="fn">printf</span>(<span class="str">"Temp: %.1f C | Umidade: %.1f%%\n"</span>,
+      HTS.<span class="fn">readTemperature</span>(), HTS.<span class="fn">readHumidity</span>());
+  }
+
+  <span class="cm">// Pressão</span>
+  Serial.<span class="fn">printf</span>(<span class="str">"Pressao: %.2f kPa\n"</span>, BARO.<span class="fn">readPressure</span>());
+
+  <span class="cm">// Proximidade</span>
+  <span class="kw">if</span> (APDS.<span class="fn">proximityAvailable</span>())
+    Serial.<span class="fn">printf</span>(<span class="str">"Prox: %d\n"</span>, APDS.<span class="fn">readProximity</span>());
+
+  <span class="cm">// Gesto</span>
+  <span class="kw">if</span> (APDS.<span class="fn">gestureAvailable</span>()) {
+    <span class="kw">int</span> g = APDS.<span class="fn">readGesture</span>();
+    <span class="kw">if</span> (g == GESTURE_UP)    Serial.<span class="fn">println</span>(<span class="str">"Gesto: CIMA"</span>);
+    <span class="kw">if</span> (g == GESTURE_DOWN)  Serial.<span class="fn">println</span>(<span class="str">"Gesto: BAIXO"</span>);
+    <span class="kw">if</span> (g == GESTURE_LEFT)  Serial.<span class="fn">println</span>(<span class="str">"Gesto: ESQUERDA"</span>);
+    <span class="kw">if</span> (g == GESTURE_RIGHT) Serial.<span class="fn">println</span>(<span class="str">"Gesto: DIREITA"</span>);
+  }
+
+  <span class="fn">delay</span>(<span class="nb">200</span>);
+}
+    </pre></div>
+  </div>
+</section>
+
+<!-- CASOS DE USO -->
+<section>
+  <div class="container">
+    <h2>Casos de Uso</h2>
+    <p>Aplicações práticas que exploram os sensores da placa.</p>
+
+    <div class="specs-grid" style="margin-top:28px;">
+      <div class="spec-card">
+        <div class="icon">🤖</div>
+        <h3>TinyML</h3>
+        <p>Reconhecimento de gestos e palavras-chave com TensorFlow Lite diretamente na placa.</p>
+      </div>
+      <div class="spec-card">
+        <div class="icon">🌿</div>
+        <h3>Monitoramento Ambiental</h3>
+        <p>Temperatura, umidade e pressão enviados via BLE para um dashboard.</p>
+      </div>
+      <div class="spec-card">
+        <div class="icon">🎮</div>
+        <h3>Controle por Gesto</h3>
+        <p>Controlar dispositivos com movimentos de mão usando o APDS-9960.</p>      </div>
+      <div class="spec-card">
+        <div class="icon">🎤</div>
+        <h3>Detecção de Som</h3>
+        <p>Classificação de sons ambientes ou detecção de nível de ruído com o microfone.</p>
+      </div>
+      <div class="spec-card">
+        <div class="icon">📷</div>
+        <h3>Visão Computacional</h3>
+        <p>Combinado com o módulo OV7675, captura de imagens para inferência de ML.</p>
+      </div>
+      <div class="spec-card">
+        <div class="icon">📍</div>
+        <h3>Rastreamento de Posição</h3>
+        <p>Cálculo de orientação e detecção de quedas com o IMU de 9 DOF.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Arduino Nano 33 BLE Sense &mdash; Documentação oficial em <a href="https://docs.arduino.cc/hardware/nano-33-ble-sense" target="_blank">docs.arduino.cc</a></p>
+</footer>
+
+</body>
+</html>

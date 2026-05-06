@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TinyML — Introdução ao Machine Learning Embarcado</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --teal:      #00878a;
+      --teal-dark: #005f61;
+      --teal-soft: #e6f7f7;
+      --ink:       #1a1a2e;
+      --muted:     #64748b;
+      --border:    #e2e8f0;
+      --bg:        #ffffff;
+      --card-bg:   #f8fafb;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.7;
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #ffffffee;
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      height: 60px;
+    }
+
+    nav .brand {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--teal);
+      text-decoration: none;
+      letter-spacing: -0.3px;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 28px;
+    }
+
+    nav ul a {
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--muted);
+      transition: color .2s;
+    }
+
+    nav ul a:hover { color: var(--teal); }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #f0fafa 0%, #e6f7f7 60%, #ffffff 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 100px 20px 80px;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background: var(--teal-soft);
+      color: var(--teal-dark);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 6px 16px;
+      border-radius: 999px;
+      margin-bottom: 24px;
+      border: 1px solid #b2e0e1;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 3.4rem);
+      font-weight: 800;
+      color: var(--ink);
+      letter-spacing: -1px;
+      line-height: 1.15;
+    }
+
+    .hero h1 span { color: var(--teal); }
+
+    .hero p {
+      margin-top: 20px;
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 640px;
+      margin-inline: auto;
+    }
+
+    .hero-actions {
+      margin-top: 36px;
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      background: var(--teal);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 13px 28px;
+      border-radius: 10px;
+      transition: background .2s, transform .15s;
+      box-shadow: 0 4px 14px #00878a33;
+    }
+
+    .btn-primary:hover { background: var(--teal-dark); transform: translateY(-1px); }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--teal);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 13px 28px;
+      border-radius: 10px;
+      border: 2px solid var(--teal);
+      transition: background .2s, color .2s, transform .15s;
+    }
+
+    .btn-outline:hover {
+      background: var(--teal-soft);
+      transform: translateY(-1px);
+    }
+
+    /* ── SECTION BASE ── */
+    section { padding: 80px 20px; }
+    section:nth-child(even) { background: var(--card-bg); }
+
+    .container {
+      max-width: 1000px;
+      margin-inline: auto;
+    }
+
+    .section-label {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 10px;
+    }
+
+    .section-title {
+      font-size: clamp(1.6rem, 3vw, 2.1rem);
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.5px;
+      margin-bottom: 16px;
+    }
+
+    .section-sub {
+      font-size: 1rem;
+      color: var(--muted);
+      max-width: 660px;
+      margin-bottom: 48px;
+    }
+
+    /* ── O QUE É TINYML ── */
+    .what-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .what-grid img {
+      width: 100%;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px #00878a1a;
+    }
+
+    .what-text p { color: var(--muted); margin-bottom: 16px; }
+
+    .highlight-box {
+      background: var(--teal-soft);
+      border-left: 4px solid var(--teal);
+      padding: 16px 20px;
+      border-radius: 0 8px 8px 0;
+      margin-top: 20px;
+      font-size: 0.95rem;
+      color: var(--teal-dark);
+      font-weight: 500;
+    }
+
+    /* ── PILARES ── */
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+    }
+
+    .pillar-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px 24px;
+      transition: box-shadow .2s, transform .2s;
+    }
+
+    .pillar-card:hover {
+      box-shadow: 0 8px 28px #00878a18;
+      transform: translateY(-3px);
+    }
+
+    .pillar-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: var(--teal-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 16px;
+    }
+
+    .pillar-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+
+    .pillar-card p { font-size: 0.9rem; color: var(--muted); }
+
+    /* ── PIPELINE ── */
+    .pipeline {
+      display: flex;
+      gap: 0;
+      flex-wrap: wrap;
+      justify-content: center;
+      counter-reset: step;
+    }
+
+    .pipe-step {
+      flex: 1;
+      min-width: 150px;
+      max-width: 200px;
+      text-align: center;
+      position: relative;
+      padding: 0 12px;
+    }
+
+    .pipe-step::after {
+      content: '→';
+      position: absolute;
+      right: -10px;
+      top: 22px;
+      color: var(--teal);
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .pipe-step:last-child::after { display: none; }
+
+    .pipe-num {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--teal);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+    }
+
+    .pipe-step h4 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+
+    .pipe-step p { font-size: 0.8rem; color: var(--muted); }
+
+    /* ── COMPARAÇÃO ── */
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .compare-table th {
+      background: var(--teal);
+      color: #fff;
+      padding: 14px 18px;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .compare-table th:first-child { border-radius: 12px 0 0 0; }
+    .compare-table th:last-child  { border-radius: 0 12px 0 0; }
+
+    .compare-table td {
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .compare-table tr:last-child td:first-child { border-radius: 0 0 0 12px; }
+    .compare-table tr:last-child td:last-child  { border-radius: 0 0 12px 0; }
+
+    .compare-table tr:nth-child(even) td { background: var(--teal-soft); }
+
+    .compare-table td:first-child { font-weight: 600; color: var(--ink); }
+
+    /* ── APLICAÇÕES ── */
+    .apps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    .app-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px 20px;
+      text-align: center;
+      transition: box-shadow .2s, transform .2s;
+    }
+
+    .app-card:hover {
+      box-shadow: 0 6px 24px #00878a22;
+      transform: translateY(-3px);
+    }
+
+    .app-card .emoji { font-size: 2rem; margin-bottom: 12px; }
+
+    .app-card h4 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .app-card p { font-size: 0.82rem; color: var(--muted); }
+
+    /* ── HARDWARE CTA ── */
+    .hw-cta {
+      background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
+      border-radius: 20px;
+      padding: 56px 40px;
+      text-align: center;
+      color: #fff;
+      box-shadow: 0 12px 40px #00878a44;
+    }
+
+    .hw-cta h2 {
+      font-size: clamp(1.6rem, 3vw, 2rem);
+      font-weight: 800;
+      margin-bottom: 14px;
+      letter-spacing: -0.5px;
+    }
+
+    .hw-cta p {
+      font-size: 1rem;
+      opacity: 0.88;
+      max-width: 540px;
+      margin-inline: auto;
+      margin-bottom: 32px;
+    }
+
+    .btn-white {
+      background: #fff;
+      color: var(--teal-dark);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 13px 30px;
+      border-radius: 10px;
+      transition: opacity .2s, transform .15s;
+      box-shadow: 0 4px 16px #0000001a;
+    }
+
+    .btn-white:hover { opacity: .92; transform: translateY(-1px); }
+
+    .hw-chip-list {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 28px;
+    }
+
+    .hw-chip {
+      background: #ffffff22;
+      border: 1px solid #ffffff55;
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 5px 14px;
+      border-radius: 999px;
+    }
+
+    /* ── DESAFIOS ── */
+    .challenges-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .challenge-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px 20px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .challenge-icon {
+      font-size: 1.6rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .challenge-card h4 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+
+    .challenge-card p { font-size: 0.84rem; color: var(--muted); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--ink);
+      color: #94a3b8;
+      text-align: center;
+      padding: 36px 20px;
+      font-size: 0.85rem;
+    }
+
+    footer strong { color: var(--teal); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 680px) {
+      .what-grid { grid-template-columns: 1fr; }
+      nav ul { display: none; }
+      .hw-cta { padding: 40px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <a class="brand" href="index.html">TinyML</a>
+  <ul>
+    <li><a href="#conceito">O que é</a></li>
+    <li><a href="#pilares">Pilares</a></li>
+    <li><a href="#pipeline">Pipeline</a></li>
+    <li><a href="#aplicacoes">Aplicações</a></li>
+    <li><a href="arduino-nano-ble-sense.html">Hardware</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">Introdução ao TinyML</div>
+  <h1>Machine Learning<br><span>na ponta da rede</span></h1>
+  <p>
+    Descubra como modelos de inteligência artificial podem ser executados
+    diretamente em microcontroladores com poucos kilobytes de memória,
+    sem necessidade de nuvem ou conexão à internet.
+  </p>
+  <div class="hero-actions">
+    <a class="btn-primary" href="#conceito">Começar a aprender</a>
+    <a class="btn-outline" href="arduino-nano-ble-sense.html">Ver hardware →</a>
+  </div>
+</div>
+
+<!-- O QUE É TINYML -->
+<section id="conceito">
+  <div class="container">
+    <div class="what-grid">
+      <div class="what-text">
+        <span class="section-label">Fundamentos</span>
+        <h2 class="section-title">O que é TinyML?</h2>
+        <p>
+          <strong>TinyML</strong> (Tiny Machine Learning) é o campo da inteligência
+          artificial que se concentra em executar modelos de aprendizado de máquina
+          em dispositivos com recursos extremamente limitados — processadores de
+          baixo custo, poucos kilobytes de RAM e consumo de energia na casa dos
+          microwatts a miliwatts.
+        </p>
+        <p>
+          Ao contrário do ML tradicional, que depende de GPUs potentes ou serviços
+          de nuvem, o TinyML processa os dados <em>localmente no dispositivo</em>
+          (on-device inference), tornando as aplicações mais rápidas, privadas,
+          baratas e energeticamente eficientes.
+        </p>
+        <p>
+          A convergência de três tendências tornou isso possível: hardware de
+          microcontroladores cada vez mais capaz, avanços em compressão de modelos
+          (quantização, pruning, destilação) e frameworks de inferência otimizados
+          como o <strong>TensorFlow Lite Micro</strong>.
+        </p>
+        <div class="highlight-box">
+          💡 Um modelo TinyML pode rodar em um chip que custa menos de R$ 5,
+          consumindo menos energia do que um LED aceso.
+        </div>
+      </div>
+      <!-- SVG ilustrativo -->
+      <svg viewBox="0 0 340 260" xmlns="http://www.w3.org/2000/svg"
+           style="width:100%;border-radius:16px;box-shadow:0 8px 32px #00878a1a;">
+        <rect width="340" height="260" fill="#e6f7f7" rx="16"/>
+        <!-- chip body -->
+        <rect x="100" y="80" width="140" height="100" rx="8" fill="#00878a"/>
+        <!-- chip legs top -->
+        <rect x="120" y="68" width="8" height="14" rx="2" fill="#005f61"/>
+        <rect x="140" y="68" width="8" height="14" rx="2" fill="#005f61"/>
+        <rect x="160" y="68" width="8" height="14" rx="2" fill="#005f61"/>
+        <rect x="180" y="68" width="8" height="14" rx="2" fill="#005f61"/>
+        <rect x="200" y="68" width="8" height="14" rx="2" fill="#005f61"/>
+        <!-- chip legs bottom -->
+        <rect x="120" y="178" width="8" height="14" rx="2" fill="#005f61"/>
+        <rect x="140" y="178" width="8" height="14" rx="2" fill="#005f61"/>
+        <rect x="160" y="178" width="8" height="14" rx="2" fill="#005f61"/>
+        <rect x="180" y="178" width="8" height="14" rx="2" fill="#005f61"/>
+        <rect x="200" y="178" width="8" height="14" rx="2" fill="#005f61"/>
+        <!-- chip legs left -->
+        <rect x="86" y="98" width="14" height="8" rx="2" fill="#005f61"/>
+        <rect x="86" y="116" width="14" height="8" rx="2" fill="#005f61"/>
+        <rect x="86" y="134" width="14" height="8" rx="2" fill="#005f61"/>
+        <rect x="86" y="152" width="14" height="8" rx="2" fill="#005f61"/>
+        <!-- chip legs right -->
+        <rect x="240" y="98" width="14" height="8" rx="2" fill="#005f61"/>
+        <rect x="240" y="116" width="14" height="8" rx="2" fill="#005f61"/>
+        <rect x="240" y="134" width="14" height="8" rx="2" fill="#005f61"/>
+        <rect x="240" y="152" width="14" height="8" rx="2" fill="#005f61"/>
+        <!-- inner die -->
+        <rect x="120" y="100" width="100" height="60" rx="4" fill="#007070"/>
+        <!-- neural net dots -->
+        <circle cx="138" cy="115" r="5" fill="#7fffd4"/>
+        <circle cx="138" cy="130" r="5" fill="#7fffd4"/>
+        <circle cx="138" cy="145" r="5" fill="#7fffd4"/>
+        <circle cx="170" cy="108" r="5" fill="#40e0d0"/>
+        <circle cx="170" cy="123" r="5" fill="#40e0d0"/>
+        <circle cx="170" cy="138" r="5" fill="#40e0d0"/>
+        <circle cx="170" cy="152" r="5" fill="#40e0d0"/>
+        <circle cx="202" cy="122" r="5" fill="#7fffd4"/>
+        <circle cx="202" cy="138" r="5" fill="#7fffd4"/>
+        <!-- lines -->
+        <line x1="143" y1="115" x2="165" y2="108" stroke="#ffffff44" stroke-width="1"/>
+        <line x1="143" y1="115" x2="165" y2="123" stroke="#ffffff44" stroke-width="1"/>
+        <line x1="143" y1="130" x2="165" y2="123" stroke="#ffffff44" stroke-width="1"/>
+        <line x1="143" y1="130" x2="165" y2="138" stroke="#ffffff44" stroke-width="1"/>
+        <line x1="143" y1="145" x2="165" y2="138" stroke="#ffffff44" stroke-width="1"/>
+        <line x1="143" y1="145" x2="165" y2="152" stroke="#ffffff44" stroke-width="1"/>
+        <line x1="175" y1="108" x2="197" y2="122" stroke="#ffffff44" stroke-width="1"/>
+        <line x1="175" y1="123" x2="197" y2="122" stroke="#ffffff44" stroke-width="1"/>
+        <line x1="175" y1="138" x2="197" y2="138" stroke="#ffffff44" stroke-width="1"/>
+        <line x1="175" y1="152" x2="197" y2="138" stroke="#ffffff44" stroke-width="1"/>
+        <!-- label -->
+        <text x="170" y="218" text-anchor="middle" font-family="Inter,sans-serif"
+              font-size="13" font-weight="700" fill="#00878a">ML no dispositivo</text>
+        <text x="170" y="235" text-anchor="middle" font-family="Inter,sans-serif"
+              font-size="11" fill="#64748b">inferência local · sem nuvem</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- PILARES -->
+<section id="pilares">
+  <div class="container">
+    <span class="section-label">Tecnologia</span>
+    <h2 class="section-title">Os três pilares do TinyML</h2>
+    <p class="section-sub">
+      O ecossistema TinyML é sustentado por três áreas que evoluem em conjunto
+      e se complementam para tornar a IA embarcada viável.
+    </p>
+    <div class="pillars-grid">
+      <div class="pillar-card">
+        <div class="pillar-icon">⚙️</div>
+        <h3>Hardware Eficiente</h3>
+        <p>
+          Microcontroladores modernos (Arm Cortex-M, RISC-V) oferecem DSPs,
+          instruções SIMD e aceleradores de ML dedicados em chips de baixíssimo
+          consumo. Exemplos: Arduino Nano 33 BLE Sense, Raspberry Pi Pico,
+          ESP32-S3, STM32.
+        </p>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-icon">🧠</div>
+        <h3>Modelos Comprimidos</h3>
+        <p>
+          Técnicas como <strong>quantização</strong> (float32 → int8),
+          <strong>pruning</strong> (remoção de pesos irrelevantes) e
+          <strong>knowledge distillation</strong> reduzem modelos de centenas
+          de MB para poucos KB, com perda mínima de acurácia.
+        </p>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-icon">📦</div>
+        <h3>Frameworks de Inferência</h3>
+        <p>
+          O <strong>TensorFlow Lite Micro (TFLM)</strong> é o principal
+          framework open-source para inferência em MCUs. Outras opções incluem
+          Edge Impulse SDK, CMSIS-NN (Arm), NNoM e MicroTVM.          
+        </p>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-icon">🔋</div>
+        <h3>Eficiência Energética</h3>
+        <p>
+          Dispositivos TinyML operam com consumo de µW a mW, permitindo
+          alimentação por baterias de baixa capacidade ou até por energy
+          harvesting (solar, piezo, RF), viabilizando anos de operação
+          sem troca de bateria.
+        </p>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-icon">🔒</div>
+        <h3>Privacidade por Design</h3>
+        <p>
+          Com inferência local, os dados brutos (áudio, imagem, sinais
+          biométricos) nunca precisam sair do dispositivo, atendendo
+          requisitos de LGPD/GDPR e reduzindo riscos de vazamento.
+        </p>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-icon">⚡</div>
+        <h3>Latência Ultra-Baixa</h3>
+        <p>
+          A inferência ocorre em microssegundos a milissegundos, sem
+          dependência de rede. Ideal para sistemas de controle em tempo
+          real, detecção de anomalias industriais e wearables de saúde.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PIPELINE -->
+<section id="pipeline">
+  <div class="container">
+    <span class="section-label">Processo</span>
+    <h2 class="section-title">Pipeline de um projeto TinyML</h2>
+    <p class="section-sub">
+      Do dado bruto ao modelo rodando no microcontrolador — conheça as etapas
+      fundamentais de desenvolvimento.
+    </p>
+    <div class="pipeline">
+      <div class="pipe-step">
+        <div class="pipe-num">1</div>
+        <h4>Coleta de Dados</h4>
+        <p>Sensores (acelerômetro, microfone, câmera) geram dados rotulados.</p>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">2</div>
+        <h4>Pré-processamento</h4>
+        <p>Normalização, extração de features (FFT, MFCCs, espectrogramas).</p>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">3</div>
+        <h4>Treinamento</h4>
+        <p>Treina-se em PC/nuvem com TensorFlow, PyTorch ou Edge Impulse.</p>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">4</div>
+        <h4>Conversão</h4>
+        <p>Modelo convertido para TFLite e quantizado para int8.</p>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">5</div>
+        <h4>Implantação</h4>
+        <p>Modelo embedado em array C e compilado para o MCU alvo.</p>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">6</div>
+        <h4>Inferência</h4>
+        <p>MCU executa o modelo em tempo real nos dados do sensor.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ML TRADICIONAL vs TINYML -->
+<section>
+  <div class="container">
+    <span class="section-label">Comparação</span>
+    <h2 class="section-title">ML Tradicional vs TinyML</h2>
+    <p class="section-sub">
+      Entenda as diferenças de escopo, requisitos e casos de uso entre as
+      abordagens.
+    </p>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Característica</th>
+          <th>ML Tradicional / Cloud ML</th>
+          <th>TinyML</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Hardware</td>
+          <td>GPU, TPU, servidores de datacenter</td>
+          <td>MCU (Cortex-M, RISC-V), &lt; 1 MB RAM</td>
+        </tr>
+        <tr>
+          <td>Consumo de energia</td>
+          <td>Watts a kilowatts</td>
+          <td>Microwatts a miliwatts</td>
+        </tr>
+        <tr>
+          <td>Latência de inferência</td>
+          <td>Dezenas de ms (+ latência de rede)</td>
+          <td>Microsegundos a poucos ms</td>
+        </tr>
+        <tr>
+          <td>Conectividade</td>
+          <td>Obrigatória (nuvem / edge server)</td>
+          <td>Opcional; funciona offline</td>
+        </tr>
+        <tr>
+          <td>Privacidade dos dados</td>
+          <td>Dados enviados para servidor externo</td>
+          <td>Processamento 100% local</td>
+        </tr>
+        <tr>
+          <td>Custo do dispositivo</td>
+          <td>Alto (infraestrutura)</td>
+          <td>Baixo (US$ 2 – US$ 30)</td>
+        </tr>
+        <tr>
+          <td>Complexidade do modelo</td>
+          <td>Bilhões de parâmetros</td>
+          <td>Milhares a centenas de milhares de parâmetros</td>
+        </tr>
+        <tr>
+          <td>Exemplos de uso</td>
+          <td>ChatGPT, reconhecimento facial, recomendações</td>
+          <td>Wake word, detecção de gestos, anomalias industriais</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- APLICAÇÕES -->
+<section id="aplicacoes">
+  <div class="container">
+    <span class="section-label">Casos de Uso</span>
+    <h2 class="section-title">Onde o TinyML é aplicado</h2>
+    <p class="section-sub">
+      Desde wearables a plantas industriais — veja onde a inteligência
+      embarcada já está transformando produtos reais.
+    </p>
+    <div class="apps-grid">
+      <div class="app-card">
+        <div class="emoji">🎙️</div>
+        <h4>Wake Word Detection</h4>
+        <p>Reconhecimento de palavras como "Hey Siri" ou "OK Google" diretamente no chip de áudio.</p>
+      </div>
+      <div class="app-card">
+        <div class="emoji">🤸</div>
+        <h4>Detecção de Gestos</h4>
+        <p>Classificação de movimentos via acelerômetro/giroscópio para controle de dispositivos.</p>
+      </div>
+      <div class="app-card">
+        <div class="emoji">🏭</div>
+        <h4>Manutenção Preditiva</h4>
+        <p>Detecção de anomalias em vibração de motores industriais para evitar falhas.</p>
+      </div>
+      <div class="app-card">
+        <div class="emoji">❤️</div>
+        <h4>Saúde &amp; Wearables</h4>
+        <p>Classificação de ECG, detecção de quedas, monitoramento de sono em dispositivos vestíveis.</p>
+      </div>
+      <div class="app-card">
+        <div class="emoji">👁️</div>
+        <h4>Visão Embarcada</h4>
+        <p>Detecção de objetos e rostos em câmeras de baixo consumo sem streaming para nuvem.</p>
+      </div>
+      <div class="app-card">
+        <div class="emoji">🌱</div>
+        <h4>Agro &amp; Ambiente</h4>
+        <p>Identificação de pragas, monitoramento de solo e qualidade do ar em sensores de campo.</p>
+      </div>
+      <div class="app-card">
+        <div class="emoji">🚗</div>
+        <h4>Automotivo</h4>
+        <p>Detecção de sonolência, reconhecimento de sinais de trânsito em sistemas embarcados veiculares.</p>
+      </div>
+      <div class="app-card">
+        <div class="emoji">🔐</div>
+        <h4>Segurança IoT</h4>
+        <p>Detecção de intrusão e anomalias de rede diretamente no gateway, sem exposição de tráfego.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DESAFIOS -->
+<section>
+  <div class="container">
+    <span class="section-label">Desafios</span>
+    <h2 class="section-title">Principais desafios do TinyML</h2>
+    <p class="section-sub">
+      Trabalhar com recursos extremamente limitados impõe restrições que
+      exigem soluções criativas de engenharia.
+    </p>
+    <div class="challenges-grid">
+      <div class="challenge-card">
+        <div class="challenge-icon">💾</div>
+        <div>
+          <h4>Memória Restrita</h4>
+          <p> MCUs possuem 256 KB – 1 MB de Flash e 64 – 512 KB de RAM. Modelos precisam caber nessas janelas com todas as buffers de ativação.</p>
+        </div>
+      </div>
+      <div class="challenge-card">
+        <div class="challenge-icon">📉</div>
+        <div>
+          <h4>Trade-off Acurácia × Tamanho</h4>
+          <p>Quantizar para int8 e podar neurônios reduzem o modelo, mas podem degradar acurácia em casos limítrofes.</p>
+        </div>
+      </div>
+      <div class="challenge-card">
+        <div class="challenge-icon">🛠️</div>
+        <div>
+          <h4>Ferramental Fragmentado</h4>
+          <p>Cada fabricante tem seu SDK, compilador e BSP. Portar um modelo entre plataformas ainda exige esforço manual significativo.</p>
+        </div>
+      </div>
+      <div class="challenge-card">
+        <div class="challenge-icon">📊</div>
+        <div>
+          <h4>Qualidade dos Dados</h4>
+          <p>Coletar dados representativos em ambientes reais (ruído, variação de temperatura, envelhecimento do sensor) é desafiador.</p>
+        </div>
+      </div>
+      <div class="challenge-card">
+        <div class="challenge-icon">🔄</div>
+        <div>
+          <h4>Atualização de Modelos</h4>
+          <p>Re-treinar e re-flashar centenas de dispositivos em campo (OTA update) requer infraestrutura e protocolos robustos.</p>
+        </div>
+      </div>
+      <div class="challenge-card">
+        <div class="challenge-icon">🌡️</div>
+        <div>
+          <h4>Ambientes Adversos</h4>
+          <p>Variações de temperatura, umidade e vibração afetam tanto os sensores quanto o comportamento do modelo em produção.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HARDWARE CTA -->
+<section style="background: var(--card-bg);">
+  <div class="container">
+    <div class="hw-cta">
+      <h2>Pronto para colocar a mão na massa?</h2>
+      <p>
+        Conheça o <strong>Arduino Nano 33 BLE Sense</strong> — o hardware que
+        usaremos neste curso. Um microcontrolador compacto com 9 sensores
+        integrados, ideal para protótipos de TinyML.
+      </p>
+      <a class="btn-white" href="arduino-nano-ble-sense.html">
+        Conhecer o hardware →
+      </a>
+      <div class="hw-chip-list">
+        <span class="hw-chip">nRF52840</span>
+        <span class="hw-chip">Cortex-M4 64 MHz</span>
+        <span class="hw-chip">1 MB Flash · 256 KB RAM</span>
+        <span class="hw-chip">IMU · Microfone · Proximidade</span>
+        <span class="hw-chip">Bluetooth 5.0</span>
+        <span class="hw-chip">TensorFlow Lite Micro</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>
+    <strong>TinyML</strong> — Material educativo de Machine Learning Embarcado &nbsp;|&nbsp;
+    <a href="arduino-nano-ble-sense.html" style="color:#40e0d0;text-decoration:none;">Hardware</a>
+    &nbsp;|&nbsp;
+    <a href="#conceito" style="color:#40e0d0;text-decoration:none;">Voltar ao topo</a>
+  </p>
+  <p style="margin-top:8px;font-size:0.8rem;opacity:0.6;">
+    Conteúdo criado para fins didáticos · 2026
+  </p>
+</footer>
+
+</body>
+</html>
