@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parte 1 — Classificação de Gestos com TinyML | Arduino Nano 33 BLE Sense</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --teal:      #00878a;
+      --teal-dark: #005f61;
+      --teal-soft: #e6f7f7;
+      --ink:       #1a1a2e;
+      --muted:     #64748b;
+      --border:    #e2e8f0;
+      --bg:        #ffffff;
+      --card-bg:   #f8fafb;
+      --code-bg:   #0f172a;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.75;
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #ffffffee;
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      height: 60px;
+    }
+
+    nav .brand {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--teal);
+      text-decoration: none;
+    }
+
+    nav ul { list-style: none; display: flex; gap: 24px; }
+    nav ul li a {
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color .2s;
+    }
+    nav ul li a:hover { color: var(--teal); }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #00373a 60%, #00878a 100%);
+      padding: 80px 20px 70px;
+      text-align: center;
+      color: #fff;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 5px 16px;
+      border-radius: 20px;
+      background: #ffffff18;
+      border: 1px solid #ffffff33;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.15;
+    }
+
+    .hero h1 span { color: #40e0d0; }
+
+    .hero p {
+      margin-top: 16px;
+      font-size: 1.1rem;
+      opacity: .8;
+      max-width: 640px;
+      margin-inline: auto;
+    }
+
+    .hero-chips {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .hero-chip {
+      padding: 5px 14px;
+      border-radius: 14px;
+      background: #ffffff14;
+      border: 1px solid #ffffff25;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .hero-cta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 36px;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 26px;
+      border-radius: 8px;
+      background: var(--teal);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: background .2s, transform .15s;
+    }
+    .btn-primary:hover { background: var(--teal-dark); transform: translateY(-2px); }
+
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 26px;
+      border-radius: 8px;
+      background: transparent;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border: 1px solid #ffffff55;
+      transition: background .2s, transform .15s;
+    }
+    .btn-outline:hover { background: #ffffff14; transform: translateY(-2px); }
+
+    /* ── LAYOUT ── */
+    .container { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+    .container-wide { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+    section { padding: 64px 20px; }
+    section:nth-child(even) { background: var(--card-bg); }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 8px;
+      margin-top: 28px;
+    }
+
+    .section-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--teal);
+      margin-bottom: 10px;
+    }
+
+    p { color: #374151; margin-bottom: 14px; }
+
+    /* ── STEPS (visão geral) ── */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-top: 36px;
+    }
+
+    .step-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px 20px;
+      position: relative;
+    }
+
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--teal-soft);
+      color: var(--teal);
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 12px;
+    }
+
+    .step-card h4 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+    .step-card p { font-size: 0.88rem; color: var(--muted); margin: 0; }
+
+    /* ── TUTORIAL STEPS ── */
+    .tutorial-step {
+      display: flex;
+      gap: 28px;
+      margin-bottom: 48px;
+      align-items: flex-start;
+    }
+
+    .tutorial-step-num {
+      flex-shrink: 0;
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: var(--teal);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tutorial-step-body { flex: 1; }
+    .tutorial-step-body h3 { margin-top: 0; font-size: 1.2rem; }
+
+    /* ── CODE ── */
+    pre {
+      background: var(--code-bg);
+      color: #e2e8f0;
+      border-radius: 12px;
+      padding: 20px 24px;
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
+      font-size: 0.83rem;
+      line-height: 1.7;
+      overflow-x: auto;
+      margin: 16px 0;
+      border: 1px solid #1e293b;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
+      font-size: 0.85em;
+      background: #f1f5f9;
+      color: var(--teal-dark);
+      padding: 2px 7px;
+      border-radius: 5px;
+    }
+
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+      font-size: inherit;
+    }
+
+    .comment { color: #64748b; }
+    .kw      { color: #93c5fd; }
+    .str     { color: #86efac; }
+    .fn      { color: #fde68a; }
+    .num     { color: #f9a8d4; }
+    .type    { color: #7dd3fc; }
+
+    /* ── INFO BOXES ── */
+    .info-box {
+      border-left: 4px solid var(--teal);
+      background: var(--teal-soft);
+      border-radius: 0 10px 10px 0;
+      padding: 16px 20px;
+      margin: 18px 0;
+    }
+
+    .info-box.warn {
+      border-left-color: #f59e0b;
+      background: #fffbeb;
+    }
+
+    .info-box.tip {
+      border-left-color: #10b981;
+      background: #ecfdf5;
+    }
+
+    .info-box strong { display: block; margin-bottom: 4px; font-size: 0.9rem; }
+    .info-box p { margin: 0; font-size: 0.9rem; color: #374151; }
+
+    /* ── FILE TREE ── */
+    .file-tree {
+      background: var(--code-bg);
+      border-radius: 12px;
+      padding: 20px 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: #cbd5e1;
+      line-height: 2;
+      margin: 16px 0;
+      border: 1px solid #1e293b;
+    }
+
+    .file-tree .dir  { color: #93c5fd; }
+    .file-tree .file { color: #86efac; }
+    .file-tree .note { color: #64748b; font-style: italic; }
+
+    /* ── LIBRARY CARDS ── */
+    .lib-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .lib-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .lib-card h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .lib-card .lib-version {
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: var(--teal-soft);
+      color: var(--teal);
+      font-weight: 600;
+    }
+
+    .lib-card p { font-size: 0.85rem; color: var(--muted); margin: 0; }
+
+    /* ── LINK EXTERNO ── */
+    .ext-link-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 24px;
+      text-decoration: none;
+      color: var(--ink);
+      transition: border-color .2s, box-shadow .2s, transform .15s;
+      margin: 12px 0;
+    }
+
+    .ext-link-card:hover {
+      border-color: var(--teal);
+      box-shadow: 0 4px 16px #00878a18;
+      transform: translateY(-2px);
+    }
+
+    .ext-link-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      background: var(--teal-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .ext-link-body { flex: 1; }
+    .ext-link-body strong { display: block; font-size: 0.95rem; margin-bottom: 2px; }
+    .ext-link-body span { font-size: 0.82rem; color: var(--muted); }
+    .ext-link-arrow { color: var(--muted); font-size: 1.1rem; }
+
+    /* ── PIPELINE ── */
+    .pipeline {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0;
+      margin: 28px 0;
+      justify-content: center;
+    }
+
+    .pipeline-step {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 20px;
+      text-align: center;
+      min-width: 110px;
+    }
+
+    .pipeline-step .icon { font-size: 1.4rem; margin-bottom: 6px; }
+    .pipeline-step span { font-size: 0.8rem; font-weight: 600; color: var(--ink); display: block; }
+    .pipeline-step small { font-size: 0.72rem; color: var(--muted); }
+
+    .pipeline-arrow {
+      font-size: 1.4rem;
+      color: var(--teal);
+      padding: 0 6px;
+    }
+
+    /* ── TABLE ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 0.88rem;
+    }
+
+    th {
+      background: var(--teal-soft);
+      color: var(--teal-dark);
+      font-weight: 700;
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      color: #374151;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--teal-soft); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--ink);
+      color: #94a3b8;
+      text-align: center;
+      padding: 40px 20px;
+      font-size: 0.88rem;
+    }
+
+    footer a { color: #40e0d0; text-decoration: none; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 640px) {
+      .tutorial-step { flex-direction: column; gap: 12px; }
+      .pipeline { gap: 8px; }
+      .pipeline-arrow { display: none; }
+      nav ul { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <a class="brand" href="index.html">← TinyML</a>
+  <ul>
+    <li><a href="#visao-geral">Visão Geral</a></li>
+    <li><a href="#dependencias">Dependências</a></li>
+    <li><a href="#tutorial">Tutorial</a></li>
+    <li><a href="#links">Links</a></li>
+    <li><a href="arduino-nano-ble-sense.html">Hardware</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">Parte 1 · Prática</div>
+  <h1>Classificação de <span>Gestos</span><br>com TinyML</h1>
+  <p>
+    Treine um modelo de redes neurais no PC, converta para TensorFlow Lite Micro
+    e execute inferência em tempo real no <strong>Arduino Nano 33 BLE Sense</strong>.
+  </p>
+  <div class="hero-chips">
+    <span class="hero-chip">🤖 TensorFlow Lite Micro</span>
+    <span class="hero-chip">📡 IMU LSM9DS1</span>
+    <span class="hero-chip">⚡ Inferência int8</span>
+    <span class="hero-chip">🐍 Python + Keras</span>
+    <span class="hero-chip">🔵 Arduino Nano 33 BLE Sense</span>
+  </div>
+  <div class="hero-cta">
+    <a class="btn-primary" href="#tutorial">Começar tutorial ↓</a>
+    <a class="btn-outline" href="https://docs.arduino.cc/tutorials/nano-33-ble-sense/get-started-with-machine-learning/"
+       target="_blank" rel="noopener">Tutorial oficial Arduino ↗</a>
+  </div>
+</div>
+
+<!-- VISÃO GERAL -->
+<section id="visao-geral">
+  <div class="container">
+    <p class="section-label">Visão Geral</p>
+    <h2>O que vamos construir?</h2>
+    <p>
+      Um classificador de gestos que usa o acelerômetro e giroscópio do Arduino Nano 33 BLE Sense
+      para reconhecer 3 movimentos (<strong>punch</strong>, <strong>flex</strong> e <strong>idle</strong>)
+      diretamente no microcontrolador — sem conexão com a internet, sem servidor externo.
+    </p>
+
+    <!-- Pipeline -->
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <div class="icon">📊</div>
+        <span>Coleta</span>
+        <small>IMU → CSV</small>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="icon">🧠</div>
+        <span>Treinamento</span>
+        <small>Keras · Python</small>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="icon">🔧</div>
+        <span>Conversão</span>
+        <small>TFLite int8</small>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="icon">📋</div>
+        <span>Deploy</span>
+        <small>.h → Arduino</small>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="icon">⚡</div>
+        <span>Inferência</span>
+        <small>Edge · Tempo real</small>
+      </div>
+    </div>
+
+    <!-- Steps overview -->
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <h4>Preparar ambiente</h4>
+        <p>Instalar bibliotecas Arduino e configurar o Python virtual env.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <h4>Coletar dados IMU</h4>
+        <p>Gravar amostras de gestos com <code>coleta_dados.ino</code> e salvar em CSV.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <h4>Treinar o modelo</h4>
+        <p>Executar o notebook <code>01_treinamento_tensorflow.ipynb</code> com Keras.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">4</div>
+        <h4>Converter para TFLite</h4>
+        <p>Quantizar para int8 com o notebook <code>02_conversao_tflite.ipynb</code>.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">5</div>
+        <h4>Gerar arquivos .h</h4>
+        <p>Exportar <code>model_data.h</code> e <code>norm_params.h</code> para o Arduino.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">6</div>
+        <h4>Flash e inferência</h4>
+        <p>Compilar <code>inferencia_gestos.ino</code> e testar gestos em tempo real.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ESTRUTURA DO PROJETO -->
+<section>
+  <div class="container">
+    <p class="section-label">Projeto</p>
+    <h2>Estrutura de arquivos</h2>
+    <p>Organize os arquivos desta forma antes de começar:</p>
+    <div class="file-tree">
+      <span class="dir">tinyml/</span><br>
+      &nbsp;&nbsp;├── <span class="dir">arduino/</span><br>
+      &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── <span class="dir">coleta_dados/</span><br>
+      &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└── <span class="file">coleta_dados.ino</span> &nbsp;<span class="note">← sketch de coleta</span><br>
+      &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└── <span class="dir">inferencia_gestos/</span><br>
+      &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">inferencia_gestos.ino</span> &nbsp;<span class="note">← sketch principal</span><br>
+      &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">model_data.h</span> &nbsp;<span class="note">← gerado pelo notebook 02</span><br>
+      &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── <span class="file">norm_params.h</span> &nbsp;<span class="note">← gerado pelo notebook 02</span><br>
+      &nbsp;&nbsp;├── <span class="dir">dados/</span><br>
+      &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── <span class="file">punch.csv</span><br>
+      &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── <span class="file">flex.csv</span><br>
+      &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└── <span class="file">idle.csv</span><br>
+      &nbsp;&nbsp;├── <span class="dir">notebooks/</span><br>
+      &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── <span class="file">01_treinamento_tensorflow.ipynb</span><br>
+      &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└── <span class="file">02_conversao_tflite.ipynb</span><br>
+      &nbsp;&nbsp;└── <span class="dir">outputs/</span> &nbsp;<span class="note">← modelos gerados</span>
+    </div>
+  </div>
+</section>
+
+<!-- DEPENDÊNCIAS -->
+<section id="dependencias">
+  <div class="container">
+    <p class="section-label">Dependências</p>
+    <h2>Bibliotecas necessárias</h2>
+
+    <h3>Arduino (Library Manager)</h3>
+    <div class="lib-grid">
+      <div class="lib-card">
+        <h4>Arduino_LSM9DS1 <span class="lib-version">v1.1.1+</span></h4>
+        <p>Driver oficial para o IMU integrado (acelerômetro + giroscópio + magnetômetro).</p>
+      </div>
+      <div class="lib-card">
+        <h4>Harvard_TinyMLx <span class="lib-version">v1.2.2+</span></h4>
+        <p>
+          Biblioteca do curso de TinyML de Harvard/Google com TensorFlow Lite Micro
+          já empacotado. Buscar por <strong>"TinyMLibrary"</strong> ou <strong>"Harvard"</strong>
+          na Library Manager.
+        </p>
+      </div>
+    </div>
+
+    <div class="info-box warn" style="margin-top:20px;">
+      <strong>⚠️ Atenção — versão da biblioteca</strong>
+      <p>
+        Utilizar a <strong>Harvard_TinyMLx</strong> (não a "Arduino_TensorFlowLite" original).
+        O construtor <code>MicroInterpreter</code> dessa versão exige 5 argumentos, incluindo
+        um <code>ErrorReporter*</code>. O sketch <code>inferencia_gestos.ino</code> já está
+        adaptado para essa API.
+      </p>
+    </div>
+
+    <h3>Python (venv)</h3>
+    <pre><code><span class="comment"># Ativar o ambiente virtual</span>
+source env/bin/activate
+
+<span class="comment"># Instalar dependências principais</span>
+pip install tensorflow numpy pandas scikit-learn matplotlib</code></pre>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Pacote</th>
+          <th>Finalidade</th>
+          <th>Versão testada</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>tensorflow</code></td><td>Treinamento Keras + conversão TFLite</td><td>2.x / 2.16</td></tr>
+        <tr><td><code>numpy</code></td><td>Manipulação de arrays e normalização</td><td>1.26+</td></tr>
+        <tr><td><code>pandas</code></td><td>Leitura e pré-processamento dos CSV</td><td>2.x</td></tr>
+        <tr><td><code>scikit-learn</code></td><td>Train/test split e métricas</td><td>1.4+</td></tr>
+        <tr><td><code>matplotlib</code></td><td>Visualização dos resultados</td><td>3.8+</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- TUTORIAL PASSO A PASSO -->
+<section id="tutorial">
+  <div class="container">
+    <p class="section-label">Tutorial</p>
+    <h2>Passo a passo completo</h2>
+    <p style="margin-bottom:36px;">Siga as etapas abaixo na ordem indicada.</p>
+
+    <!-- PASSO 1 -->
+    <div class="tutorial-step">
+      <div class="tutorial-step-num">1</div>
+      <div class="tutorial-step-body">
+        <h3>Instalar as bibliotecas no Arduino IDE</h3>
+        <p>
+          Abra o Arduino IDE, vá em <strong>Sketch → Include Library → Manage Libraries…</strong>
+          e instale:
+        </p>
+        <ul style="padding-left:20px; color:#374151; font-size:0.92rem; line-height:2;">
+          <li><strong>Arduino_LSM9DS1</strong> — buscar por "LSM9DS1"</li>
+          <li><strong>Harvard_TinyMLx</strong> — buscar por "TinyMLibrary" ou "Harvard"</li>
+        </ul>
+        <div class="info-box tip" style="margin-top:14px;">
+          <strong>💡 Dica</strong>
+          <p>
+            Após instalar, reinicie o Arduino IDE para que as bibliotecas sejam
+            reconhecidas corretamente.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASSO 2 -->
+    <div class="tutorial-step">
+      <div class="tutorial-step-num">2</div>
+      <div class="tutorial-step-body">
+        <h3>Coletar amostras de gestos</h3>
+        <p>
+          Carregue o sketch <code>coleta_dados.ino</code> no Arduino Nano 33 BLE Sense.
+          Abra o Serial Monitor a <strong>115200 baud</strong> e realize cada gesto
+          conforme solicitado. Os dados IMU (aX, aY, aZ, gX, gY, gZ) serão impressos
+          no monitor.
+        </p>
+        <p>
+          Use o script <code>salvar_dados.py</code> para capturar e salvar
+          automaticamente em <code>dados/punch.csv</code>, <code>dados/flex.csv</code>
+          e <code>dados/idle.csv</code>:
+        </p>
+        <pre><code><span class="comment"># Ativar venv</span>
+source env/bin/activate
+
+<span class="comment"># Salvar amostras (ajuste a porta serial conforme seu sistema)</span>
+python salvar_dados.py --porta /dev/ttyACM0 --gesto punch --amostras 50
+python salvar_dados.py --porta /dev/ttyACM0 --gesto flex  --amostras 50
+python salvar_dados.py --porta /dev/ttyACM0 --gesto idle  --amostras 50</code></pre>
+        <div class="info-box">
+          <strong>ℹ️ Janela de 119 amostras</strong>
+          <p>
+            Cada janela de captura contém 119 leituras × 6 features (aX·aY·aZ·gX·gY·gZ),
+            totalizando 714 valores por amostra. Esse valor está definido em
+            <code>norm_params.h</code> como <code>kNumSamples</code>.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASSO 3 -->
+    <div class="tutorial-step">
+      <div class="tutorial-step-num">3</div>
+      <div class="tutorial-step-body">
+        <h3>Treinar o modelo com Keras</h3>
+        <p>
+          Com o ambiente virtual ativado, abra o Jupyter e execute o notebook:
+        </p>
+        <pre><code>jupyter notebook notebooks/01_treinamento_tensorflow.ipynb</code></pre>
+        <p>O notebook realiza:</p>
+        <ul style="padding-left:20px; color:#374151; font-size:0.92rem; line-height:2.2;">
+          <li>Carregamento e pré-processamento dos CSV</li>
+          <li>Normalização Z-score por feature (salva <code>norm_mean.npy</code> / <code>norm_std.npy</code>)</li>
+          <li>Definição de uma rede densa (Dense → Dense → Softmax)</li>
+          <li>Treinamento com <code>EarlyStopping</code> e <code>ModelCheckpoint</code></li>
+          <li>Avaliação e matriz de confusão</li>
+        </ul>
+        <p>Ao final, o modelo é salvo em <code>outputs/best_model.keras</code>.</p>
+      </div>
+    </div>
+
+    <!-- PASSO 4 -->
+    <div class="tutorial-step">
+      <div class="tutorial-step-num">4</div>
+      <div class="tutorial-step-body">
+        <h3>Converter para TensorFlow Lite int8</h3>
+        <p>Execute o segundo notebook:</p>
+        <pre><code>jupyter notebook notebooks/02_conversao_tflite.ipynb</code></pre>
+        <p>O notebook automaticamente:</p>
+        <ul style="padding-left:20px; color:#374151; font-size:0.92rem; line-height:2.2;">
+          <li>Carrega o modelo Keras salvo</li>
+          <li>Aplica quantização inteira (int8) com dataset representativo</li>
+          <li>Salva <code>outputs/gesture_int8.tflite</code></li>
+          <li>Gera <code>arduino/inferencia_gestos/model_data.h</code> com o modelo como array C</li>
+          <li>Gera <code>arduino/inferencia_gestos/norm_params.h</code> com médias e desvios padrão</li>
+        </ul>
+        <div class="info-box">
+          <strong>ℹ️ Por que int8?</strong>
+          <p>
+            A quantização reduz o modelo de float32 para 8 bits, diminuindo o
+            tamanho em ~4× e acelerando a inferência no Cortex-M4 do Nano 33 BLE Sense,
+            que não possui FPU de 64 bits.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASSO 5 -->
+    <div class="tutorial-step">
+      <div class="tutorial-step-num">5</div>
+      <div class="tutorial-step-body">
+        <h3>Verificar os arquivos gerados</h3>
+        <p>
+          Confirme que os três arquivos coexistem na pasta
+          <code>arduino/inferencia_gestos/</code>:
+        </p>
+        <div class="file-tree">
+          <span class="dir">inferencia_gestos/</span><br>
+          &nbsp;&nbsp;├── <span class="file">inferencia_gestos.ino</span><br>
+          &nbsp;&nbsp;├── <span class="file">model_data.h</span> &nbsp;<span class="note">← array do modelo int8</span><br>
+          &nbsp;&nbsp;└── <span class="file">norm_params.h</span> &nbsp;<span class="note">← kNormMean, kNormStd, kNumSamples…</span>
+        </div>
+        <p>
+          Abra <code>norm_params.h</code> e confirme que <code>kNumSamples</code>,
+          <code>kNumFeatures</code> e <code>kNumClasses</code> batem com o que
+          foi usado no treinamento.
+        </p>
+      </div>
+    </div>
+
+    <!-- PASSO 6 -->
+    <div class="tutorial-step">
+      <div class="tutorial-step-num">6</div>
+      <div class="tutorial-step-body">
+        <h3>Compilar e fazer upload para o Arduino</h3>
+        <p>
+          No Arduino IDE, abra <code>arduino/inferencia_gestos/inferencia_gestos.ino</code>.
+          Selecione a placa correta:
+        </p>
+        <ul style="padding-left:20px; color:#374151; font-size:0.92rem; line-height:2;">
+          <li><strong>Placa:</strong> Arduino Nano 33 BLE (Tools → Board → Arduino Mbed OS Nano Boards)</li>
+          <li><strong>Porta:</strong> selecione a porta USB correspondente (<code>/dev/ttyACM0</code> no Linux)</li>
+        </ul>
+        <pre><code><span class="comment">// Pressione Ctrl+U para compilar e fazer upload</span></code></pre>
+        <div class="info-box warn">
+          <strong>⚠️ Erro de compilação — micro_interpreter.h</strong>
+          <p>
+            Se aparecer erro sobre número de argumentos no construtor
+            <code>MicroInterpreter</code>, certifique-se de estar usando a biblioteca
+            <strong>Harvard_TinyMLx</strong> (não Arduino_TensorFlowLite) e que o sketch
+            declara um <code>tflite::MicroErrorReporter</code> passado como 5º argumento.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASSO 7 -->
+    <div class="tutorial-step">
+      <div class="tutorial-step-num">7</div>
+      <div class="tutorial-step-body">
+        <h3>Testar a inferência em tempo real</h3>
+        <p>
+          Abra o Serial Monitor a <strong>115200 baud</strong>. O Arduino aguardará
+          um movimento brusco (threshold = 2,5 g) como gatilho, capturará 119 amostras,
+          normalizará, e imprimirá o resultado:
+        </p>
+        <pre><code>====================================
+  TinyML — Classificador de Gestos
+  Arduino Nano 33 BLE Sense
+====================================
+  Modelo:      12748 bytes
+  Arena:       32 KB
+  Input dim:   714
+  Classes:     punch, flex, idle
+====================================
+Realizando gestos — aguardando...
+
+→ Gesto: <span class="str">punch</span>  (<span class="num">94.3</span>%)  |  tempo de inferência: <span class="num">18.42</span> ms
+   Scores: punch=<span class="num">94.3</span>%  flex=<span class="num">3.1</span>%  idle=<span class="num">2.6</span>%</code></pre>
+        <p>
+          O LED RGB indica visualmente: <strong>vermelho = punch</strong>,
+          <strong>verde = flex</strong>, <strong>azul = idle</strong>,
+          <strong>amarelo = incerto</strong>.
+        </p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- REFERÊNCIAS / LINKS -->
+<section id="links">
+  <div class="container">
+    <p class="section-label">Links Úteis</p>
+    <h2>Referências e tutoriais oficiais</h2>
+    <p style="margin-bottom:24px;">
+      A prática desta Parte 1 é baseada no tutorial oficial do Arduino e nos
+      materiais do curso de TinyML de Harvard/Google.
+    </p>
+
+    <a class="ext-link-card"
+       href="https://docs.arduino.cc/tutorials/nano-33-ble-sense/get-started-with-machine-learning/"
+       target="_blank" rel="noopener">
+      <div class="ext-link-icon">🎮</div>
+      <div class="ext-link-body">
+        <strong>Get Started With Machine Learning on Arduino — arduino.cc</strong>
+        <span>Tutorial oficial de classificação de gestos com TensorFlow Lite Micro no Nano 33 BLE Sense</span>
+      </div>
+      <div class="ext-link-arrow">↗</div>
+    </a>
+
+    <a class="ext-link-card"
+       href="https://docs.arduino.cc/hardware/nano-33-ble-sense/"
+       target="_blank" rel="noopener">
+      <div class="ext-link-icon">📋</div>
+      <div class="ext-link-body">
+        <strong>Arduino Nano 33 BLE Sense — Documentação oficial</strong>
+        <span>Especificações de hardware, pinout e exemplos das bibliotecas de sensores</span>
+      </div>
+      <div class="ext-link-arrow">↗</div>
+    </a>
+
+    <a class="ext-link-card"
+       href="https://www.tensorflow.org/lite/microcontrollers"
+       target="_blank" rel="noopener">
+      <div class="ext-link-icon">🧠</div>
+      <div class="ext-link-body">
+        <strong>TensorFlow Lite for Microcontrollers — tensorflow.org</strong>
+        <span>Guia oficial do TFLite Micro: arquitetura, quantização, deployment em MCUs</span>
+      </div>
+      <div class="ext-link-arrow">↗</div>
+    </a>
+
+    <a class="ext-link-card"
+       href="https://github.com/tinyMLx/arduino-library"
+       target="_blank" rel="noopener">
+      <div class="ext-link-icon">📦</div>
+      <div class="ext-link-body">
+        <strong>Harvard TinyMLx Arduino Library — GitHub</strong>
+        <span>Código-fonte da biblioteca utilizada neste projeto (Harvard_TinyMLx)</span>
+      </div>
+      <div class="ext-link-arrow">↗</div>
+    </a>
+
+    <a class="ext-link-card"
+       href="https://github.com/arduino/ArduinoTensorFlowLiteTutorials"
+       target="_blank" rel="noopener">
+      <div class="ext-link-icon">🔗</div>
+      <div class="ext-link-body">
+        <strong>ArduinoTensorFlowLiteTutorials — GitHub oficial Arduino</strong>
+        <span>Repositório com os sketches do tutorial oficial (gesture training, magic wand, etc.)</span>
+      </div>
+      <div class="ext-link-arrow">↗</div>
+    </a>
+
+    <a class="ext-link-card"
+       href="arduino-nano-ble-sense.html">
+      <div class="ext-link-icon">🔵</div>
+      <div class="ext-link-body">
+        <strong>Arduino Nano 33 BLE Sense — Página do hardware (este curso)</strong>
+        <span>Visão geral dos sensores, especificações e capacidades de TinyML da placa</span>
+      </div>
+      <div class="ext-link-arrow">→</div>
+    </a>
+
+  </div>
+</section>
+
+<!-- TROUBLESHOOTING -->
+<section>
+  <div class="container">
+    <p class="section-label">Solução de Problemas</p>
+    <h2>Erros comuns</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Erro</th>
+          <th>Causa provável</th>
+          <th>Solução</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>micro_log.h: No such file</code></td>
+          <td>Header inexistente na Harvard_TinyMLx</td>
+          <td>Remover a linha <code>#include "tensorflow/lite/micro/micro_log.h"</code></td>
+        </tr>
+        <tr>
+          <td><code>MicroInterpreter expects 6 arguments</code></td>
+          <td>API diferente entre versões da lib</td>
+          <td>Passar <code>error_reporter</code> como 5º arg; usar <code>MicroErrorReporter</code></td>
+        </tr>
+        <tr>
+          <td><code>TFLITE_SCHEMA_VERSION not declared</code></td>
+          <td>Constante ausente na Harvard_TinyMLx</td>
+          <td>Substituir verificação por <code>if (model == nullptr)</code></td>
+        </tr>
+        <tr>
+          <td>Classificação sempre "idle"</td>
+          <td>Normalização inconsistente</td>
+          <td>Confirmar que <code>norm_params.h</code> foi gerado com os mesmos dados de treino</td>
+        </tr>
+        <tr>
+          <td>IMU não inicializa</td>
+          <td>Biblioteca errada ou placa incorreta</td>
+          <td>Verificar se a placa selecionada é "Arduino Nano 33 BLE" (não "Nano 33 IoT")</td>
+        </tr>
+        <tr>
+          <td><code>AllocateTensors() failed</code></td>
+          <td>Arena de 32 KB insuficiente</td>
+          <td>Aumentar <code>kTensorArenaSize</code> para <code>48 * 1024</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>
+    <strong>TinyML — Parte 1</strong> &nbsp;|&nbsp;
+    <a href="index.html">Início</a> &nbsp;|&nbsp;
+    <a href="arduino-nano-ble-sense.html">Hardware</a> &nbsp;|&nbsp;
+    <a href="https://docs.arduino.cc/tutorials/nano-33-ble-sense/get-started-with-machine-learning/"
+       target="_blank" rel="noopener">Tutorial oficial Arduino ↗</a>
+  </p>
+  <p style="margin-top:8px; font-size:0.8rem; opacity:.5;">
+    Conteúdo criado para fins didáticos · 2026
+  </p>
+</footer>
+
+</body>
+</html>
